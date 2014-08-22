@@ -1,0 +1,216 @@
+//
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  Geant4 software  is  copyright of the Copyright Holders  of *
+// * the Geant4 Collaboration.  It is provided  under  the terms  and *
+// * conditions of the Geant4 Software License,  included in the file *
+// * LICENSE and available at  http://cern.ch/geant4/license .  These *
+// * include a list of copyright holders.                             *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GEANT4 collaboration.                      *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the Geant4 Software license.          *
+// ********************************************************************
+//
+#include "Trajectory.hh"
+#include "EventAction.hh"
+#include "ScintHit.hh"
+#include "PMTHit.hh"
+#include "G4EventManager.hh"
+#include "G4SDManager.hh"
+#include "G4RunManager.hh"
+#include "G4Event.hh"
+#include "G4EventManager.hh"
+#include "G4TrajectoryContainer.hh"
+#include "G4Trajectory.hh"
+#include "G4VVisManager.hh"
+#include "G4ios.hh"
+#include "G4UImanager.hh"
+#include "Analysis.hh"
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+//ofstream data("padmu",ios::app);
+
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+EventAction::EventAction(RecorderBase* r)
+  :recorder(r),saveThreshold(0),scintCollID(-1),pmtCollID(-1),verbose(0),
+   pmtThreshold(110),forcedrawphotons(false),forcenophotons(false)
+{
+ 
+}
+ 
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+EventAction::~EventAction(){}
+
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+void EventAction::BeginOfEventAction(const G4Event* ){
+  
+   
+
+  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+  if(scintCollID<0)
+    scintCollID=SDman->GetCollectionID("scintCollection");
+  if(pmtCollID<0)
+    pmtCollID=SDman->GetCollectionID("pmtHitCollection");
+
+}
+ 
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+void EventAction::EndOfEventAction(const G4Event* anEvent){
+ 
+   Analysis* myana = Analysis::GetAnalysis();
+  G4int  pn1,pn2,pn3,pn4,no,photon;
+  pn1=-2;pn2=-2;pn3=-2;pn4=-2;
+  G4double totlE=0.0;
+  G4int id;
+  id=anEvent->GetEventID() ;
+  if(id==0)G4cout<< ">>>End of Event "<<id << G4endl; 
+   
+  G4TrajectoryContainer* trajectoryContainer=anEvent->GetTrajectoryContainer();
+  
+  G4int n_trajectories = 0;
+  if (trajectoryContainer) n_trajectories = trajectoryContainer->entries();
+
+  // extract the trajectories and draw them
+  if (G4VVisManager::GetConcreteInstance()){
+    for (G4int i=0; i<n_trajectories; i++){ 
+      Trajectory* trj = (Trajectory*)
+	((*(anEvent->GetTrajectoryContainer()))[i]);
+      if(trj->GetParticleName()=="opticalphoton"){
+	trj->SetForceDrawTrajectory(forcedrawphotons);
+	trj->SetForceNoDrawTrajectory(forcenophotons);
+      }
+      trj->DrawTrajectory(50);
+    }
+  }
+
+  //data<<id<<G4endl;
+ 
+  ScintHitsCollection* SHC = 0;
+  PMTHitsCollection* PHC = 0;
+  G4HCofThisEvent* HCE = anEvent->GetHCofThisEvent();
+  
+  //Get the hit collections
+  if(HCE){
+    if(scintCollID>=0)SHC = (ScintHitsCollection*)(HCE->GetHC(scintCollID));
+    if(pmtCollID>=0)PHC = (PMTHitsCollection*)(HCE->GetHC(pmtCollID));
+  }
+
+  //Hits in scintillator
+  if(SHC){
+    int n_hit = SHC->entries();
+    G4ThreeVector  FirstHitPos(0.);     
+    G4double edep;
+    totlE=0.0;
+    G4double edepMax=0;
+    G4double time=100*s;
+
+    for(int i=0;i<n_hit;i++){ //gather info on hits in scintillator
+      edep=(*SHC)[i]->GetEdep();
+
+      if(time>(*SHC)[i]->GetTime())
+        {
+         time=(*SHC)[i]->GetTime();
+         FirstHitPos=(*SHC)[i]->GetPos();
+        }
+     
+      totlE+=edep;
+      
+      if(edep>edepMax){
+	edepMax=edep;//store max energy deposit
+	G4ThreeVector posMax=(*SHC)[i]->GetPos();
+      }
+    }
+
+
+    if(totlE==0.){
+      if(verbose>0)G4cout<<"No hits in the scintillator this event."<<G4endl;
+      // data<<"0"<<G4endl;
+    }    
+    else{
+      //Finish calculation of energy weighted position
+      
+     // data<<"1"<<G4endl;
+     // data<<time/ns<< setw(20)<< (FirstHitPos.x()/mm)<< setw(20)<< FirstHitPos.y()/mm<< setw(20)<< FirstHitPos.z()/mm<< setw(20)<<totlE/MeV<<G4endl;
+      
+    }
+    
+  }
+  
+  if(PHC)
+  {
+    G4int pmts=PHC->entries();
+    G4int PMTSAboveThreshold=0;
+    //Gather info from all PMTs
+    for(G4int i=0;i<pmts;i++)
+    {
+      
+      if((*PHC)[i]->GetPhotonCount()>=pmtThreshold)
+      {
+	PMTSAboveThreshold++;
+        
+      //  G4cout<<"\t"<<i<<" pmt hit time "<<(*PHC)[i]->GetPMTTime()/ns<<"ns"<<G4endl;
+      }
+      else
+      {//wasnt above the threshold, turn it back off
+	(*PHC)[i]->SetDrawit(false);
+      }
+     
+     }
+ 
+    //  data<<PMTSAboveThreshold<<G4endl;
+     
+     for(G4int i=0;i<pmts;i++)
+     { 
+           photon=(*PHC)[i]->GetPhotonCount();
+           no=(*PHC)[i]->GetPMTNumber();
+           switch(no)
+           {
+  		 case 0: pn1=photon;
+         	   		break;
+   		 case 1: pn2=photon;
+          	  		break;
+  		 case 2: pn3=photon;
+           			break;
+   		 case 3: pn4=photon;
+          			break;
+    		 default:       break;
+          }
+	   //data<<(*PHC)[i]->GetPMTNumber()<<"\t"<< setw(20)<<(*PHC)[i]->GetPhotonCount()<<G4endl;
+      
+     }
+   
+     //myana->FillIncident(pn1,pn2,pn3,pn4);
+  }
+  myana->FillIncident(pn1,pn2,pn3,pn4,totlE/MeV);
+ if(id==0) G4cout<<totlE/MeV<<G4endl;
+}
+
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+void EventAction::SetSaveThreshold(G4int save){
+/*Sets the save threshold for the random number seed. If the number of photons
+generated in an event is lower than this, then save the seed for this event
+in a file called run###evt###.rndm
+*/
+  saveThreshold=save;
+  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+  G4RunManager::GetRunManager()->SetRandomNumberStoreDir("random/");
+  //  G4UImanager::GetUIpointer()->ApplyCommand("/random/setSavingFlag 1");
+}
+
+
+
+
