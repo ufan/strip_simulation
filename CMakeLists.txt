@@ -7,9 +7,9 @@ project(padmpi)
 
 #------------------------------------------------------------------------------
 # check MPI package...
-find_package(MPI REQUIRED)
+#find_package(MPI REQUIRED)
 # modify these var. if needed
-set(CMAKE_CXX_COMPILER mpicxx)
+#set(CMAKE_CXX_COMPILER mpicxx)
 #set(CMAKE_CXX_INCLUDE_PATH )
 
 #----------------------------------------------------------------------------
@@ -44,13 +44,13 @@ endif()
 #----------------------------------------------------------------------------
 # Add G4mpi library
 #
-SET(Geant4_LIBRARIES ${Geant4_LIBRARIES} G4mpi)
-ADD_LIBRARY(G4mpi SHARED IMPORTED)
-SET_PROPERTY(TARGET G4mpi APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-SET_TARGET_PROPERTIES(G4mpi PROPERTIES
-  IMPORTED_LOCATION_RELEASE "${Geant4_DIR}/../libG4mpi.so"
-  IMPORTED_SONAME_RELEASE "libG4mpi.so"
-)
+#SET(Geant4_LIBRARIES ${Geant4_LIBRARIES} G4mpi)
+#ADD_LIBRARY(G4mpi SHARED IMPORTED)
+#SET_PROPERTY(TARGET G4mpi APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+#SET_TARGET_PROPERTIES(G4mpi PROPERTIES
+#  IMPORTED_LOCATION_RELEASE "${Geant4_DIR}/../libG4mpi.so"
+#  IMPORTED_SONAME_RELEASE "libG4mpi.so"
+#)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -96,4 +96,4 @@ endforeach()
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS padmpi RUNTIME DESTINATION bin)
+#install(TARGETS padmpi RUNTIME DESTINATION bin)

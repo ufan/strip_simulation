@@ -43,7 +43,7 @@ Analysis::Analysis()
   fAnaName   = "bar";
   p1=-1;p2=-1;p3=-1;p4=-1;
   // ROOT style
-  gROOT-> Reset();
+//gROOT-> Reset();
 
   // define tree
   mytree=new TTree("T","An photon number tree with 4 branches");
