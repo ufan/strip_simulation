@@ -51,9 +51,9 @@ PhysicsList::PhysicsList():  G4VModularPhysicsList()
   RegisterPhysics( new MuonPhysics("muon"));
 
   // Optical Physics
-/*  G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
+  G4OpticalPhysics* opticalPhysics = new G4OpticalPhysics();
   RegisterPhysics( opticalPhysics );
-
+/*
   opticalPhysics->SetWLSTimeProfile("delta");
 
   opticalPhysics->SetScintillationYieldFactor(1.0);

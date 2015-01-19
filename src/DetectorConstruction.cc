@@ -177,7 +177,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 			      experimentalHall_log,"expHall",0,false,0);
 
   experimentalHall_log->SetVisAttributes(G4VisAttributes::Invisible);
-
+/*
 //paddle 
   G4Box* paddle_box = new G4Box("paddle_box",15*cm,15*cm,
 			    180*cm);
@@ -185,9 +185,11 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 				       G4Material::GetMaterial("Air"),
 				      "paddle_log",0,0,0); 
   G4PVPlacement* paddle_phys = new G4PVPlacement(0,G4ThreeVector(),paddle_log,"paddle",
-				   experimentalHall_log,false,0);  
+				   experimentalHall_log,false,0,true);  
 
  paddle_log->SetVisAttributes(G4VisAttributes::Invisible);
+ */
+
  //guide
  ///////////////////////////////////////////////////////////////////////////
 //----------------------- head_Trd
@@ -202,7 +204,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 //------------------------------head middle
 
   G4double  pDbz = 3*mm/2.0;
-  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
+  /*MODIFICATION:*/
+  //G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
+  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz);
 
   G4RotationMatrix* bRot = new G4RotationMatrix;
   bRot->rotateZ(0.*rad);
@@ -224,7 +228,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4UnionSolid* htbc= new G4UnionSolid("htbc", htb, head_c, bRot, bTrans);
 //
   G4double  pDb2z = 5*mm/2.0;
-  G4Box* head_Box2 = new G4Box("hb",dx1,22*mm/2.0,pDb2z+0.0002*mm);
+  /*MODIFICATION:*/
+  //G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z+0.0002*mm);
+  G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z);
   bTrans=G4ThreeVector(0,0,pDTrdz+2.0*(pDbz+pDcz)+pDb2z);
   G4UnionSolid* ht2bc= new G4UnionSolid("ht2bc", htbc,head_Box2, bRot, bTrans);
  
@@ -236,7 +242,9 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 
   G4double suPos_x = 0. *mm;
   G4double suPos_y = 0. *mm;
-  G4double suPos_z =pDTrdz+scintz-0.001*mm;
+  /*MODIFICATION:*/
+  //G4double suPos_z =pDTrdz+scintz-0.001*mm;
+  G4double suPos_z =pDTrdz+scintz;
 
   G4RotationMatrix* suRot = new G4RotationMatrix;
   suRot->rotateX(0.*deg);
@@ -252,7 +260,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4LogicalVolume* scint_log = new G4LogicalVolume(scint_union,Scintillator,
 				    "scint_log",0,0,0);
   G4PVPlacement* scint_phys = new G4PVPlacement(0,G4ThreeVector(),scint_log,"scintillator",
-				   paddle_log,false,0); 
+				   experimentalHall_log,false,0,true); 
   //-----------------------  silicon guide
   //
   G4double  pDc2z = 5*mm/2.0;
@@ -260,19 +268,21 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 
   G4double guidePos_x = 0. *mm;
   G4double guidePos_y = 0. *mm;
-  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm;
+  /*MODIFICATION:*/
+  //G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm+0.0002*mm;
+  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z;
   G4ThreeVector  gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
 
   G4RotationMatrix gRot;
   gRot.rotateX(0.*deg);
   G4LogicalVolume* guide_log = new G4LogicalVolume(end_tub,G4Material::GetMaterial("Glass"),"guide_log",0,0,0);
   G4PVPlacement* guideup_phys= new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                                 guide_log,"guide_p",scint_log,false,1);
+                                                 guide_log,"guide_p",experimentalHall_log,false,1,true);
   gRot.rotateX(180.*deg);
   guidePos_z = -guidePos_z;
   gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
   G4PVPlacement* guidedown_phys = new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                  guide_log,"guide_p",scint_log,false,0);
+                                  guide_log,"guide_p",experimentalHall_log,false,0,true);
  /////////////////////////////////////////////////////////////
    //****************** Build PMTs
     G4double innerRadius_pmt = 0.*cm;
@@ -299,14 +309,14 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
     
      new G4PVPlacement(0,G4ThreeVector(0,0,height_pmt/2),
 				       photocath_log,"photocath",
-				       pmt_log,false,0);
+				       pmt_log,false,0,true);
     
     G4ThreeVector  phpos=G4ThreeVector(0.*mm,0.0*mm,0.);
 
     G4RotationMatrix phRot;
     phRot.rotateX(0.*deg);
 
-    G4PVPlacement* pmt_phys = new G4PVPlacement(G4Transform3D(phRot,phpos),pmt_log,"PMT",guide_log,false,0);
+    G4PVPlacement* pmt_phys = new G4PVPlacement(G4Transform3D(phRot,phpos),pmt_log,"PMT",guide_log,false,0,true);
 
    
 
@@ -384,8 +394,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   PSSurface->SetFinish(polishedteflonair);
   PSSurface->SetModel(LUT);
   PSSurface->SetSigmaAlpha(PSSigma_alpha);
-  new G4LogicalBorderSurface("PSSurface",paddle_phys,experimentalHall_phys,PSSurface); 
-  new G4LogicalBorderSurface("PSSurface",scint_phys,paddle_phys,PSSurface); 
+  new G4LogicalBorderSurface("PSSurface",scint_phys,experimentalHall_phys,PSSurface); 
  
 //--------------------------------scint guide
   G4double GuideReflectivity[num] = {0.69,0.69};

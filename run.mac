@@ -1,0 +1,9 @@
+/control/verbose 2
+/run/verbose 2
+/event/verbose 0
+/trackig/verbose 1
+
+/gun/particle proton
+/gun/energy 500 GeV
+
+/run/beamOn 1200
