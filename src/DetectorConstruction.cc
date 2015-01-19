@@ -55,7 +55,8 @@
 #include "G4UnionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4IntersectionSolid.hh"
-
+#include "G4SystemOfUnits.hh"
+#include "G4PhysicalConstants.hh"
 
 ScintSD* DetectorConstruction::scint_SD;
 PMTSD* DetectorConstruction::pmt_SD;
@@ -170,25 +171,25 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   
   //Create experimental hall
   experimentalHall_box
-    = new G4Box("expHall_box",0.4*m,0.4*m,2.0*m);
+    = new G4Box("expHall_box",0.4*m,0.4*m,3.0*m);
   experimentalHall_log = new G4LogicalVolume(experimentalHall_box,
                                              Air,"expHall_log",0,0,0);
   experimentalHall_phys = new G4PVPlacement(0,G4ThreeVector(),
 			      experimentalHall_log,"expHall",0,false,0);
 
   experimentalHall_log->SetVisAttributes(G4VisAttributes::Invisible);
-/*
+
 //paddle 
   G4Box* paddle_box = new G4Box("paddle_box",15*cm,15*cm,
 			    180*cm);
   G4LogicalVolume* paddle_log = new G4LogicalVolume(paddle_box,
 				       G4Material::GetMaterial("Air"),
 				      "paddle_log",0,0,0); 
-  G4PVPlacement* paddle_phys = new G4PVPlacement(0,G4ThreeVector(),paddle_log,"paddle",
+  G4PVPlacement* paddle_phys = new G4PVPlacement(0,G4ThreeVector(0,0,0),paddle_log,"paddle",
 				   experimentalHall_log,false,0,true);  
 
  paddle_log->SetVisAttributes(G4VisAttributes::Invisible);
- */
+ 
 
  //guide
  ///////////////////////////////////////////////////////////////////////////
@@ -260,7 +261,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4LogicalVolume* scint_log = new G4LogicalVolume(scint_union,Scintillator,
 				    "scint_log",0,0,0);
   G4PVPlacement* scint_phys = new G4PVPlacement(0,G4ThreeVector(),scint_log,"scintillator",
-				   experimentalHall_log,false,0,true); 
+				   paddle_log,false,0,true); 
   //-----------------------  silicon guide
   //
   G4double  pDc2z = 5*mm/2.0;
@@ -277,16 +278,17 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   gRot.rotateX(0.*deg);
   G4LogicalVolume* guide_log = new G4LogicalVolume(end_tub,G4Material::GetMaterial("Glass"),"guide_log",0,0,0);
   G4PVPlacement* guideup_phys= new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                                 guide_log,"guide_p",experimentalHall_log,false,1,true);
+                                                 guide_log,"guide_p",paddle_log,false,1,true);
   gRot.rotateX(180.*deg);
   guidePos_z = -guidePos_z;
   gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
   G4PVPlacement* guidedown_phys = new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                  guide_log,"guide_p",experimentalHall_log,false,0,true);
+                                  guide_log,"guide_p",paddle_log,false,0,true);
  /////////////////////////////////////////////////////////////
    //****************** Build PMTs
     G4double innerRadius_pmt = 0.*cm;
     G4double outerRadius_pmt = 10.*mm/2.0;
+    //d_mtl=8*mm;
     G4double height_pmt = d_mtl/2.;
     G4double startAngle_pmt = 0.*deg;
     G4double spanningAngle_pmt = 360.*deg;
@@ -394,7 +396,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   PSSurface->SetFinish(polishedteflonair);
   PSSurface->SetModel(LUT);
   PSSurface->SetSigmaAlpha(PSSigma_alpha);
-  new G4LogicalBorderSurface("PSSurface",scint_phys,experimentalHall_phys,PSSurface); 
+  new G4LogicalBorderSurface("PSSurface",scint_phys,paddle_phys,PSSurface); 
  
 //--------------------------------scint guide
   G4double GuideReflectivity[num] = {0.69,0.69};
