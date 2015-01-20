@@ -206,8 +206,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 
   G4double  pDbz = 3*mm/2.0;
   /*MODIFICATION:*/
-  //G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
-  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz);
+  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
+  //G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz);
 
   G4RotationMatrix* bRot = new G4RotationMatrix;
   bRot->rotateZ(0.*rad);
@@ -230,8 +230,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 //
   G4double  pDb2z = 5*mm/2.0;
   /*MODIFICATION:*/
-  //G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z+0.0002*mm);
-  G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z);
+  G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z+0.0002*mm);
+  //G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z);
   bTrans=G4ThreeVector(0,0,pDTrdz+2.0*(pDbz+pDcz)+pDb2z);
   G4UnionSolid* ht2bc= new G4UnionSolid("ht2bc", htbc,head_Box2, bRot, bTrans);
  
@@ -244,8 +244,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4double suPos_x = 0. *mm;
   G4double suPos_y = 0. *mm;
   /*MODIFICATION:*/
-  //G4double suPos_z =pDTrdz+scintz-0.001*mm;
-  G4double suPos_z =pDTrdz+scintz;
+  G4double suPos_z =pDTrdz+scintz-0.001*mm;
+  //G4double suPos_z =pDTrdz+scintz;
 
   G4RotationMatrix* suRot = new G4RotationMatrix;
   suRot->rotateX(0.*deg);
@@ -270,8 +270,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4double guidePos_x = 0. *mm;
   G4double guidePos_y = 0. *mm;
   /*MODIFICATION:*/
-  //G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm+0.0002*mm;
-  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z;
+  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm+0.0002*mm;
+  //G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z;
   G4ThreeVector  gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
 
   G4RotationMatrix gRot;
