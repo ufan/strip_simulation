@@ -206,8 +206,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 
   G4double  pDbz = 3*mm/2.0;
   /*MODIFICATION:*/
-  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
-  //G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz);
+  //G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz+0.0007*mm);
+  G4Box* head_Box = new G4Box("hb",dx2,dy2,pDbz);
 
   G4RotationMatrix* bRot = new G4RotationMatrix;
   bRot->rotateZ(0.*rad);
@@ -230,8 +230,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 //
   G4double  pDb2z = 5*mm/2.0;
   /*MODIFICATION:*/
-  G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z+0.0002*mm);
-  //G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z);
+  //G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z+0.0002*mm);
+  G4Box* head_Box2 = new G4Box("hb2",dx1,22*mm/2.0,pDb2z);
   bTrans=G4ThreeVector(0,0,pDTrdz+2.0*(pDbz+pDcz)+pDb2z);
   G4UnionSolid* ht2bc= new G4UnionSolid("ht2bc", htbc,head_Box2, bRot, bTrans);
  
@@ -244,8 +244,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   G4double suPos_x = 0. *mm;
   G4double suPos_y = 0. *mm;
   /*MODIFICATION:*/
-  G4double suPos_z =pDTrdz+scintz-0.001*mm;
-  //G4double suPos_z =pDTrdz+scintz;
+  //G4double suPos_z =pDTrdz+scintz-0.001*mm;
+  G4double suPos_z =pDTrdz+scintz;
 
   G4RotationMatrix* suRot = new G4RotationMatrix;
   suRot->rotateX(0.*deg);
@@ -264,62 +264,62 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
 				   paddle_log,false,0,true); 
   //-----------------------  silicon guide
   //
-  G4double  pDc2z = 5*mm/2.0;
+  G4double  pDc2z = 2.5*mm/2.0;
   G4Tubs* end_tub= new G4Tubs("end_tub",0.,14.5*mm/2.0,pDc2z,0,360.0*deg);
 
   G4double guidePos_x = 0. *mm;
   G4double guidePos_y = 0. *mm;
   /*MODIFICATION:*/
-  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm+0.0002*mm;
-  //G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z;
+  //G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z-0.001*mm+0.0002*mm;
+  G4double guidePos_z = (pDTrdz+pDbz+pDcz+pDb2z)*2.0+scintz+pDc2z;
   G4ThreeVector  gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
 
   G4RotationMatrix gRot;
   gRot.rotateX(0.*deg);
   G4LogicalVolume* guide_log = new G4LogicalVolume(end_tub,G4Material::GetMaterial("Glass"),"guide_log",0,0,0);
   G4PVPlacement* guideup_phys= new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                                 guide_log,"guide_p",paddle_log,false,1,true);
+                                                 guide_log,"guide_up",paddle_log,false,1,true);
   gRot.rotateX(180.*deg);
   guidePos_z = -guidePos_z;
   gpos=G4ThreeVector(guidePos_x,guidePos_y,guidePos_z);
   G4PVPlacement* guidedown_phys = new G4PVPlacement(G4Transform3D(gRot,gpos),
-                                  guide_log,"guide_p",paddle_log,false,0,true);
+                                  guide_log,"guide_down",paddle_log,false,0,true);
  /////////////////////////////////////////////////////////////
    //****************** Build PMTs
     G4double innerRadius_pmt = 0.*cm;
-    G4double outerRadius_pmt = 10.*mm/2.0;
-    //d_mtl=8*mm;
-    G4double height_pmt = d_mtl/2.;
+    G4double outerRadius_pmt = 14.5*mm/2.0;
+    G4double height_pmt = (1.0+d_mtl)*mm/2.0;
     G4double startAngle_pmt = 0.*deg;
     G4double spanningAngle_pmt = 360.*deg;
     
     G4Tubs* pmt = new G4Tubs("pmt_tube",innerRadius_pmt,outerRadius_pmt,
 		     height_pmt,startAngle_pmt,spanningAngle_pmt);
-    
+    G4LogicalVolume* pmt_log = new G4LogicalVolume(pmt,G4Material::GetMaterial("Glass"),
+				  "pmt_log");
     //the "photocathode" is a metal slab at the back of the glass that
     //is only a very rough approximation of the real thing since it only
     //absorbs or detects the photons based on the efficiency set below
-    G4Tubs* photocath = new G4Tubs("photocath_tube",innerRadius_pmt,outerRadius_pmt,
-			   height_pmt/2.0,startAngle_pmt,spanningAngle_pmt);
-    
-    G4LogicalVolume* pmt_log = new G4LogicalVolume(pmt,G4Material::GetMaterial("Glass"),
-				  "pmt_log");
+    G4double innerRadius_cathode = 0.*cm;
+    G4double outerRadius_cathode = 10.0*mm/2.0;
+    G4Tubs* photocath = new G4Tubs("photocath_tube",innerRadius_cathode,outerRadius_cathode,
+			   d_mtl/2.0,startAngle_pmt,spanningAngle_pmt);
     G4LogicalVolume* photocath_log = new G4LogicalVolume(photocath,
 					G4Material::GetMaterial("Al"),
 					"photocath_log");
 
-    
-     new G4PVPlacement(0,G4ThreeVector(0,0,height_pmt/2),
+     new G4PVPlacement(0,G4ThreeVector(0,0,height_pmt-d_mtl/2.0),
 				       photocath_log,"photocath",
 				       pmt_log,false,0,true);
-    
-    G4ThreeVector  phpos=G4ThreeVector(0.*mm,0.0*mm,0.);
-
+    //
+    G4double pmtPos_z = (pDTrdz+pDbz+pDcz+pDb2z+pDc2z)*2.0+scintz+height_pmt;
+    G4ThreeVector  phpos=G4ThreeVector(0.*mm,0.0*mm,pmtPos_z);
     G4RotationMatrix phRot;
     phRot.rotateX(0.*deg);
-
-    G4PVPlacement* pmt_phys = new G4PVPlacement(G4Transform3D(phRot,phpos),pmt_log,"PMT",guide_log,false,0,true);
-
+    G4PVPlacement* pmtup_phys = new G4PVPlacement(G4Transform3D(phRot,phpos),pmt_log,"PMT_up",paddle_log,false,1,true);
+    
+    phpos=G4ThreeVector(0.*mm,0.0*mm,-pmtPos_z);
+    phRot.rotateX(180.*deg);
+    G4PVPlacement* pmtdown_phys = new G4PVPlacement(G4Transform3D(phRot,phpos),pmt_log,"PMT_down",paddle_log,false,0,true);
    
 
     G4VisAttributes* pmt_va = new G4VisAttributes();
@@ -436,8 +436,8 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
   OppmtSurfaceGD->SetType(dielectric_dielectric);
   OppmtSurfaceGD->SetFinish(polished);
   OppmtSurfaceGD->SetModel(unified);
-  new G4LogicalBorderSurface("GDSurfaceU",guideup_phys,pmt_phys,OppmtSurfaceGD);
-  new G4LogicalBorderSurface("GDSurfaceD",guidedown_phys,pmt_phys,OppmtSurfaceGD);
+  new G4LogicalBorderSurface("GDSurfaceU",guideup_phys,pmtup_phys,OppmtSurfaceGD);
+  new G4LogicalBorderSurface("GDSurfaceD",guidedown_phys,pmtdown_phys,OppmtSurfaceGD);
 
 
   return experimentalHall_phys;
