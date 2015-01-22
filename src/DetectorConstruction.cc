@@ -288,7 +288,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructDetector()
    //****************** Build PMTs
     G4double innerRadius_pmt = 0.*cm;
     G4double outerRadius_pmt = 14.5*mm/2.0;
-    G4double height_pmt = (1.0+d_mtl)*mm/2.0;
+    G4double height_pmt = (1.0*mm+d_mtl)/2.0;
     G4double startAngle_pmt = 0.*deg;
     G4double spanningAngle_pmt = 360.*deg;
     
